@@ -1,0 +1,49 @@
+neuron int_fire1:
+
+  state:
+    r integer
+  end
+
+  initial_values:
+    V_m mV = 0.
+  end
+
+  parameters:
+    tau real = 2.
+    t_ref ms = 2ms
+  end
+
+  equations:
+    V_m' = exp(-t/tau)
+  end
+
+  input:
+    spikes mV <- spike
+    currents <- current
+  end
+
+  output: spike
+
+  internals:
+    RefractoryCounts integer = steps(t_ref)
+  end
+
+  update:
+    if r == 0: # neuron not refractory
+      integrate_odes()
+      # we add spike as it is
+      V_m += spikes
+    else: # neuron is absolute refractory
+      r = r - 1
+    end
+
+    # threshold crossing
+    if V_m > 1:
+      V_m = 0
+      r = RefractoryCounts
+      emit_spike()
+    end
+
+  end
+
+end
