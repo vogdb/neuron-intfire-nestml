@@ -5,42 +5,47 @@ neuron int_fire1:
   end
 
   initial_values:
-    V_m mV = 0.
-  end
-
-  parameters:
-    tau real = 2.
-    t_ref ms = 2ms
+    V_m mV = 0mV
   end
 
   equations:
-    V_m' = exp(-t/tau)
+    shape I_shape = pA * exp(-t / tau)
+    function I pA = convolve(I_shape, pA) + I_e + currents
+    V_m' = V_m * (-1./tau) * crutch * I/pF
+  end
+
+  parameters:
+    tau     ms = 2ms     # Time constant of synaptic current.
+    t_ref   ms = 2ms     # Duration of refractory period in ms.
+    V_reset mV = 0mV
+    V_thr   mV = 1mV
+    I_e     pA = 0pA     # Constant external input current in pA.
+  end
+
+  internals:
+    RefractoryCounts integer = steps(t_ref) # refractory time in steps
+    crutch real = 0.05 # This is a number to make `tau` functionality correct. Basically it shouldn't exist but I don't know how to be without it for now.
   end
 
   input:
-    spikes mV <- spike
-    currents <- current
+    # spikes pA  <- spike
+    spikes mV  <- spike
+    currents    <- current
   end
 
   output: spike
 
-  internals:
-    RefractoryCounts integer = steps(t_ref)
-  end
-
   update:
     if r == 0: # neuron not refractory
       integrate_odes()
-      # we add spike as it is
       V_m += spikes
     else: # neuron is absolute refractory
       r = r - 1
     end
 
-    # threshold crossing
-    if V_m > 1:
-      V_m = 0
+    if V_m >= V_thr: # threshold crossing
       r = RefractoryCounts
+      V_m = V_reset
       emit_spike()
     end
 
