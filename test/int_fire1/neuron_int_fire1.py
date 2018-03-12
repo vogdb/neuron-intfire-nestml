@@ -4,7 +4,7 @@ from neuron import gui  # VERY IMPORTANT to include 'gui'! Despite the fact that
 
 RUN_TIME = 200
 SPIKES_START = 1
-SPIKES_INTERVAL = 20
+SPIKES_INTERVAL = 5
 SPIKES_NUMBER = 10000
 SPIKE_TIMES = [i for i in range(SPIKES_START, SPIKES_NUMBER, SPIKES_INTERVAL)]
 
@@ -12,7 +12,7 @@ soma = h.Section(name='soma')
 
 iaf_neuron = h.IntFire1()
 iaf_neuron.m = 0.1
-iaf_neuron.tau = 1
+iaf_neuron.tau = 10
 iaf_neuron.refrac = 2
 
 generator = h.NetStim()
@@ -23,7 +23,7 @@ generator.noise = 0
 
 conn = h.NetCon(generator, iaf_neuron)
 conn.delay = 0
-conn.weight[0] = 1
+conn.weight[0] = 0.5
 
 m_vec = h.Vector()
 t_vec = h.Vector()
