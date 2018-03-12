@@ -2,7 +2,7 @@ import nest
 import pylab
 
 nest.Install("neuron_simulator_models")
-neuron = nest.Create("int_fire1", params={})
+neuron = nest.Create("int_fire1", params={'tau': 10.})
 multimeter = nest.Create(
     'multimeter',
     params={"record_from": ["V_m"], "withtime": True, "interval": 0.1}
@@ -10,13 +10,13 @@ multimeter = nest.Create(
 
 RUN_TIME = 200
 SPIKES_START = 1
-SPIKES_INTERVAL = 20
+SPIKES_INTERVAL = 5
 SPIKES_NUMBER = 10000
 SPIKE_TIMES = [float(i) for i in range(SPIKES_START, SPIKES_NUMBER, SPIKES_INTERVAL)]
 
 generator = nest.Create(
     'spike_generator',
-    params={"start": float(SPIKES_START), "spike_times": SPIKE_TIMES}
+    params={"spike_times": SPIKE_TIMES}
 )
 detector = nest.Create(
     'spike_detector',
@@ -27,7 +27,7 @@ nest.Connect(multimeter, neuron)
 nest.Connect(neuron, detector)
 nest.Connect(generator, neuron, syn_spec={
     "delay": 1.0,
-    "weight": 1.0,
+    "weight": 0.5,
     "model": "static_synapse"
 })
 nest.Simulate(RUN_TIME)
