@@ -1,0 +1,65 @@
+neuron int_fire4:
+
+  state:
+    r integer # counts number of tick during the refractory period
+  end
+
+  initial_values:
+    V_m mV = 0mV
+  end
+
+  equations:
+    shape I_shape_ex = pA * exp(-1/tau_syn_ex*t)
+    shape I_shape_in_rise = pA * tau_syn_in * -exp(-1/tau_syn_in_rise*t)
+    shape I_shape_in_fall = pA * tau_syn_in * exp(-1/tau_syn_in_fall*t)
+    function I_syn pA = convolve(I_shape_in_rise, in_spikes) + convolve(I_shape_in_fall, in_spikes) + convolve(I_shape_ex, ex_spikes) + I_e + currents
+    # shape I_shape_in = pA * tau_syn_in * (exp(-1/tau_syn_in_fall*t) - exp(-1/tau_syn_in_rise*t))
+    # function I_syn pA = convolve(I_shape_in, in_spikes) + convolve(I_shape_ex, ex_spikes) + I_e + currents
+    V_m' = -1/tau_m * V_m + 1/1pF * I_syn * crutch
+  end
+
+  parameters:
+    tau_m            ms = 10ms # Membrane time constant.
+    tau_syn_in_rise  ms = 1ms  # Time constant of inhibitory synaptic current. Rise phase.
+    tau_syn_in_fall  ms = 3ms  # Time constant of inhibitory synaptic current. Fall phase.
+    tau_syn_ex       ms = 2ms  # Time constant of excitatory synaptic current.
+    t_ref            ms = 2ms  # Duration of refractory period
+    V_reset          mV = 0mV  # reset value of the membrane potential
+    V_threshold      mV = 1mV  # Threshold value of V_m for spike
+    I_e              pA = 0pA  # External current.
+    crutch         real = 2.2  # Crutch to make this model behave as in Neuron
+  end
+
+  internals:
+    RefractoryCounts integer = steps(t_ref) # refractory time in steps
+    tau_syn_in real = tau_syn_in_rise * tau_syn_in_fall / (tau_syn_in_fall - tau_syn_in_rise)
+  end
+
+  input:
+    ex_spikes pA <- excitatory spike
+    in_spikes pA <- inhibitory spike
+    currents    <- current
+  end
+
+  output: spike
+
+  update:
+    if r == 0: # neuron not refractory
+      integrate_odes()
+    else: # neuron is absolute refractory
+      r = r - 1
+    end
+
+    if V_m < V_reset: # lower bound
+      V_m = V_reset
+    end
+
+    if V_m >= V_threshold: # threshold crossing
+      r = RefractoryCounts
+      V_m = V_reset
+      emit_spike()
+    end
+
+  end
+
+end
