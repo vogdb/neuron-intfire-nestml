@@ -11,7 +11,6 @@ SPIKE_TIMES = [i for i in range(SPIKES_START, SPIKES_NUMBER, SPIKES_INTERVAL)]
 soma = h.Section(name='soma')
 
 iaf_neuron = h.IntFire1()
-iaf_neuron.m = 0.1
 iaf_neuron.tau = 10
 iaf_neuron.refrac = 2
 
@@ -22,7 +21,7 @@ generator.interval = SPIKES_INTERVAL
 generator.noise = 0
 
 conn = h.NetCon(generator, iaf_neuron)
-conn.delay = 0
+conn.delay = 1.0
 conn.weight[0] = 0.5
 iaf_neuron_nc = h.NetCon(iaf_neuron, None)
 

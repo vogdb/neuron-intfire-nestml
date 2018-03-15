@@ -2,7 +2,7 @@ import nest
 import pylab
 
 nest.Install("neuron_simulator_models")
-neuron = nest.Create("int_fire1", params={'tau': 10.})
+neuron = nest.Create("int_fire1", params={'tau': 10., 't_ref': 2.0})
 multimeter = nest.Create(
     'multimeter',
     params={"record_from": ["V_m"], "withtime": True, "interval": 0.1}
