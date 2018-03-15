@@ -24,6 +24,7 @@ generator.noise = 0
 conn = h.NetCon(generator, iaf_neuron)
 conn.delay = 0
 conn.weight[0] = 0.5
+iaf_neuron_nc = h.NetCon(iaf_neuron, None)
 
 m_vec = h.Vector()
 t_vec = h.Vector()
@@ -31,7 +32,7 @@ spike_vec = h.Vector()
 spike_t_vec = h.Vector()
 t_vec.record(h._ref_t)
 m_vec.record(iaf_neuron._ref_m)
-conn.record(spike_t_vec, spike_vec, 1)
+iaf_neuron_nc.record(spike_t_vec, spike_vec, 1)
 
 duration = RUN_TIME
 h.tstop = duration
